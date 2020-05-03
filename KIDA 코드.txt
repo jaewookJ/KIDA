@@ -55,9 +55,10 @@ if __name__ == "__main__":
     print(sensor.get_amb_temp())
     print(sensor.get_obj_temp())
                
-                #온도 조건문
+#온도 조건문
 while  sensor.get_obj_temp > 20.00:
         
+#나이         
         # Import required modules
 import cv2 as cv
 import math
