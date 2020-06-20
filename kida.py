@@ -1,7 +1,5 @@
 # 온도 측정
 import smbus
-
-
 class MLX90614():
 
 
@@ -54,11 +52,11 @@ if __name__ == "__main__":
     sensor = MLX90614()
     print(sensor.get_amb_temp())
     print(sensor.get_obj_temp())
-               
+
 #온도 조건문
 while  sensor.get_obj_temp > 20.00:
-        
-#나이         
+
+#나이
         # Import required modules
 import cv2 as cv
 import math
@@ -167,7 +165,7 @@ while cv.waitKey(1) < 0:
 
                 # 나이 조건문
                 if age < 12:
-        
+
 # 부저 소리
 #Libraries
 import RPi.GPIO as GPIO
@@ -177,7 +175,7 @@ GPIO.setwarnings(False)
 #Select GPIO mode
 GPIO.setmode(GPIO.BCM)
 #Set buzzer - pin 23 as output
-buzzer=23 
+buzzer=23
 GPIO.setup(buzzer,GPIO.OUT)
 #Run forever loop
 while True:
