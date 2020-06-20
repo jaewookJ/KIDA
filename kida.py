@@ -1,8 +1,15 @@
 # 온도 측정
 import smbus
+#Libraries
+import RPi.GPIO as GPIO
+from time import sleep
+import cv2 as cv
+import math
+import time
+import argparse
+
+
 class MLX90614():
-
-
     MLX90614_RAWIR1=0x04
     MLX90614_RAWIR2=0x05
     MLX90614_TA=0x06
@@ -47,23 +54,6 @@ class MLX90614():
         data = self.read_reg(self.MLX90614_TOBJ1)
         return self.data_to_temp(data)
 
-
-if __name__ == "__main__":
-    sensor = MLX90614()
-    print(sensor.get_amb_temp())
-    print(sensor.get_obj_temp())
-
-#온도 조건문
-while  sensor.get_obj_temp > 20.00:
-
-#나이
-        # Import required modules
-import cv2 as cv
-import math
-import time
-import argparse
-
-
 def getFaceBox(net, frame, conf_threshold=0.7):
     frameOpencvDnn = frame.copy()
     frameHeight = frameOpencvDnn.shape[0]
@@ -87,113 +77,107 @@ def getFaceBox(net, frame, conf_threshold=0.7):
 
 
 
-
-parser = argparse.ArgumentParser(description='Use this script to run age and gender recognition using OpenCV.')
-parser.add_argument('--input', help='Path to input image or video file. Skip this argument to capture frames from a camera.')
-
-
-args = parser.parse_args()
-
-
-faceProto = "opencv_face_detector.pbtxt"
-faceModel = "opencv_face_detector_uint8.pb"
+if __name__ == "__main__":
+    sensor = MLX90614()
+    print(sensor.get_amb_temp())
+    print(sensor.get_obj_temp())
+    parser = argparse.ArgumentParser(description='Use this script to run age and gender recognition using OpenCV.')
+    parser.add_argument('--input', help='Path to input image or video file. Skip this argument to capture frames from a camera.')
 
 
-ageProto = "age_deploy.prototxt"
-ageModel = "age_net.caffemodel"
+    args = parser.parse_args()
 
 
-genderProto = "gender_deploy.prototxt"
-genderModel = "gender_net.caffemodel"
+    faceProto = "opencv_face_detector.pbtxt"
+    faceModel = "opencv_face_detector_uint8.pb"
 
 
-MODEL_MEAN_VALUES = (78.4263377603, 87.7689143744, 114.895847746)
-ageList = ['(0-2)', '(4-6)', '(8-12)', '(15-20)', '(25-32)', '(38-43)', '(48-53)', '(60-100)']
-genderList = ['Male', 'Female']
+    ageProto = "age_deploy.prototxt"
+    ageModel = "age_net.caffemodel"
 
 
-# Load network
-ageNet = cv.dnn.readNet(ageModel, ageProto)
-genderNet = cv.dnn.readNet(genderModel, genderProto)
-faceNet = cv.dnn.readNet(faceModel, faceProto)
+    genderProto = "gender_deploy.prototxt"
+    genderModel = "gender_net.caffemodel"
 
 
-# Open a video file or an image file or a camera stream
-cap = cv.VideoCapture(args.input if args.input else 0)
-padding = 20
-while cv.waitKey(1) < 0:
-    # Read frame
-    t = time.time()
-    hasFrame, frame = cap.read()
-    if not hasFrame:
-        cv.waitKey()
-        break
+    MODEL_MEAN_VALUES = (78.4263377603, 87.7689143744, 114.895847746)
+    ageList = ['(0-2)', '(4-6)', '(8-12)', '(15-20)', '(25-32)', '(38-43)', '(48-53)', '(60-100)']
+    genderList = ['Male', 'Female']
 
 
-    frameFace, bboxes = getFaceBox(faceNet, frame)
-    if not bboxes:
-        print("No face Detected, Checking next frame")
-        continue
+    # Load network
+    ageNet = cv.dnn.readNet(ageModel, ageProto)
+    genderNet = cv.dnn.readNet(genderModel, genderProto)
+    faceNet = cv.dnn.readNet(faceModel, faceProto)
+
+    #온도 조건문
+    while True:
+        sleep(0.5)
+        print(sensor.get_obj_temp)
+        if  sensor.get_obj_temp > 20.00:
+            # Open a video file or an image file or a camera stream
+            cap = cv.VideoCapture(args.input if args.input else 0)
+            padding = 20
+            while True : # cv.waitKey(1) < 0:
+                # Read frame
+                t = time.time()
+                hasFrame, frame = cap.read()
+                if not hasFrame:
+                    cv.waitKey()
+                    break
 
 
-    for bbox in bboxes:
-        # print(bbox)
-        face = frame[max(0,bbox[1]-padding):min(bbox[3]+padding,frame.shape[0]-1),max(0,bbox[0]-padding):min(bbox[2]+padding, frame.shape[1]-1)]
+                frameFace, bboxes = getFaceBox(faceNet, frame)
+                if not bboxes:
+                    print("No face Detected, Checking next frame")
+                    continue
 
 
-        blob = cv.dnn.blobFromImage(face, 1.0, (227, 227), MODEL_MEAN_VALUES, swapRB=False)
-        genderNet.setInput(blob)
-        genderPreds = genderNet.forward()
-        gender = genderList[genderPreds[0].argmax()]
-        # print("Gender Output : {}".format(genderPreds))
-        print("Gender : {}, conf = {:.3f}".format(gender, genderPreds[0].max()))
+                for bbox in bboxes:
+                    # print(bbox)
+                    face = frame[max(0,bbox[1]-padding):min(bbox[3]+padding,frame.shape[0]-1),max(0,bbox[0]-padding):min(bbox[2]+padding, frame.shape[1]-1)]
 
 
-        ageNet.setInput(blob)
-        agePreds = ageNet.forward()
-        age = ageList[agePreds[0].argmax()]
-        print("Age Output : {}".format(agePreds))
-        print("Age : {}, conf = {:.3f}".format(age, agePreds[0].max()))
+                    blob = cv.dnn.blobFromImage(face, 1.0, (227, 227), MODEL_MEAN_VALUES, swapRB=False)
+                    genderNet.setInput(blob)
+                    genderPreds = genderNet.forward()
+                    gender = genderList[genderPreds[0].argmax()]
+                    # print("Gender Output : {}".format(genderPreds))
+                    print("Gender : {}, conf = {:.3f}".format(gender, genderPreds[0].max()))
 
 
-        label = "{},{}".format(gender, age)
-        cv.putText(frameFace, label, (bbox[0], bbox[1]-10), cv.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 255), 2, cv.LINE_AA)
-        cv.imshow("Age Gender Demo", frameFace)
-        # cv.imwrite("age-gender-out-{}".format(args.input),frameFace)
-    print("time : {:.3f}".format(time.time() - t))
+                    ageNet.setInput(blob)
+                    agePreds = ageNet.forward()
+                    age = ageList[agePreds[0].argmax()]
+                    print("Age Output : {}".format(agePreds))
+                    print("Age : {}, conf = {:.3f}".format(age, agePreds[0].max()))
 
 
-                # 나이 조건문
+                    label = "{},{}".format(gender, age)
+                    cv.putText(frameFace, label, (bbox[0], bbox[1]-10), cv.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 255), 2, cv.LINE_AA)
+                    cv.imshow("Age Gender Demo", frameFace)
+                    # cv.imwrite("age-gender-out-{}".format(args.input),frameFace)
+                print("time : {:.3f}".format(time.time() - t))
+
+
+                            # 나이 조건문
                 if age < 12:
-
-# 부저 소리
-#Libraries
-import RPi.GPIO as GPIO
-from time import sleep
-#Disable warnings (optional)
-GPIO.setwarnings(False)
-#Select GPIO mode
-GPIO.setmode(GPIO.BCM)
-#Set buzzer - pin 23 as output
-buzzer=23
-GPIO.setup(buzzer,GPIO.OUT)
-#Run forever loop
-while True:
-    GPIO.output(buzzer,GPIO.HIGH)
-    print ("Beep")
-    sleep(0.5) # Delay in seconds
-    GPIO.output(buzzer,GPIO.LOW)
-    print ("No Beep")
-    sleep(0.5)
-
-
-
-
-else:
-                print(“Be careful it’s still hot”)
-
-
-
-
-else:
-print(“no danger”)
+                    # 부저 소리
+                    #Disable warnings (optional)
+                    GPIO.setwarnings(False)
+                    #Select GPIO mode
+                    GPIO.setmode(GPIO.BCM)
+                    #Set buzzer - pin 23 as output
+                    buzzer=23
+                    GPIO.setup(buzzer,GPIO.OUT)
+                    #Run forever loop
+                    print(“Be careful it’s still hot”)
+                    while True:
+                        GPIO.output(buzzer,GPIO.HIGH)
+                        print ("Beep")
+                        sleep(0.5) # Delay in seconds
+                        GPIO.output(buzzer,GPIO.LOW)
+                        print ("No Beep")
+                        sleep(0.5)
+                        else:
+                    print(“no danger”)
