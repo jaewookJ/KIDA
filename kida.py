@@ -180,5 +180,5 @@ if __name__ == "__main__":
                         GPIO.output(buzzer,GPIO.LOW)
                         print ("No Beep")
                         sleep(0.5)
-                        else:
+                else:
                     print("no danger")
