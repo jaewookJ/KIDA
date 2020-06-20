@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # 온도 측정
 import smbus
 #Libraries
@@ -171,7 +172,7 @@ if __name__ == "__main__":
                     buzzer=23
                     GPIO.setup(buzzer,GPIO.OUT)
                     #Run forever loop
-                    print(“Be careful it’s still hot”)
+                    print("Be careful it’s still hot")
                     while True:
                         GPIO.output(buzzer,GPIO.HIGH)
                         print ("Beep")
@@ -180,4 +181,4 @@ if __name__ == "__main__":
                         print ("No Beep")
                         sleep(0.5)
                         else:
-                    print(“no danger”)
+                    print("no danger")
