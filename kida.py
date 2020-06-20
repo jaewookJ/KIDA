@@ -163,6 +163,7 @@ if __name__ == "__main__":
 
                             # 나이 조건문
                 if age < 12:
+                    print('age <12')
                     # 부저 소리
                     #Disable warnings (optional)
                     GPIO.setwarnings(False)
