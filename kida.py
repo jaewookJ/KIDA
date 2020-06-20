@@ -160,10 +160,10 @@ if __name__ == "__main__":
                     # cv.imwrite("age-gender-out-{}".format(args.input),frameFace)
                 print("time : {:.3f}".format(time.time() - t))
 
-
+                print(age)
                             # 나이 조건문
                 if age < 12:
-                    print('age <12')
+                    print('age <120')
                     # 부저 소리
                     #Disable warnings (optional)
                     GPIO.setwarnings(False)
