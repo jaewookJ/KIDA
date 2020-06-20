@@ -150,6 +150,7 @@ if __name__ == "__main__":
                     ageNet.setInput(blob)
                     agePreds = ageNet.forward()
                     age = ageList[agePreds[0].argmax()]
+                    ageListNum = agePreds[0].argmax()
                     print("Age Output : {}".format(agePreds))
                     print("Age : {}, conf = {:.3f}".format(age, agePreds[0].max()))
 
@@ -160,10 +161,10 @@ if __name__ == "__main__":
                     # cv.imwrite("age-gender-out-{}".format(args.input),frameFace)
                 print("time : {:.3f}".format(time.time() - t))
 
-                print("------------1818-----------",age)
+                # print("------------1818-----------",age)
                             # 나이 조건문
-                if age < 12:
-                    print('age <120')
+                if ageListNum <= 2:
+                    # print('age <120')
                     # 부저 소리
                     #Disable warnings (optional)
                     GPIO.setwarnings(False)
